@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package common
+package model
 
 import "time"
 
@@ -41,9 +41,22 @@ type Restaurant struct {
 }
 
 type OpenHour struct {
-	id           int
-	WeekName     string
-	StartTime    PGTime
-	ClosingTime  PGTime
+	id           int    `db:"restaurant_id"`
+	WeekName     string `db:"restaurant_id"`
+	StartTime    PGTime `db:"restaurant_id"`
+	ClosingTime  PGTime `db:"restaurant_id"`
+	RestaurantID int    `db:"restaurant_id"`
+}
+
+type Dish struct {
+	id           int     `db:"id"`
+	Name         string  `db:"name"`
+	Price        float64 `db:"price"`
+	RestaurantID int     `db:"restaurant_id"`
+}
+
+type PurchaseHistory struct {
+	id           int `db:"id"`
 	RestaurantID int `db:"restaurant_id"`
+	DishID       int `db:"dish_id"`
 }

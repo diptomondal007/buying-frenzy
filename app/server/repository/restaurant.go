@@ -15,31 +15,30 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package handler
+package repository
 
 import (
-	"github.com/labstack/echo/v4"
-
-	"github.com/diptomondal007/buying-frenzy/app/server/usecase"
+	"github.com/diptomondal007/buying-frenzy/app/common/model"
+	"github.com/jmoiron/sqlx"
 )
 
-type handler struct {
-	e  *echo.Echo
-	rc usecase.RestaurantUseCase
+type restaurant struct {
+	db *sqlx.DB
 }
 
-func NewHandler(e *echo.Echo, rc usecase.RestaurantUseCase) {
-	h := handler{e: e, rc: rc}
+func (r restaurant) GetOpenRestaurants() ([]*model.Restaurant, error) {
+	res := make([]*model.Restaurant, 0)
 
-	// restaurant group
-	rg := e.Group("/api/v1/restaurant")
-	rg.GET("/open", h.openRestaurants)
-	rg.GET("/list", h.list)
-	//rg.GET("/search")
-	//
-	//ug := e.Group("/api/v1/user")
-	//ug.POST("/purchase")
-	//
-	//dg := e.Group("/api/v1/dishes")
-	//dg.GET("/search")
+	if err := r.db.Select(&res, `select * from restaurant`); err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+type Restaurant interface {
+	GetOpenRestaurants() ([]*model.Restaurant, error)
+}
+
+func NewRestaurantRepo(db *sqlx.DB) Restaurant {
+	return &restaurant{db: db}
 }

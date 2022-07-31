@@ -33,9 +33,7 @@ type PurchaseHistory struct {
 	TransactionDate   string  `json:"transactionDate"`
 }
 
-// UserEntry is to read user data from stream. We don't want to load the whole file in memory because
-// that may cause memory spike and may overflow total memory allocated for the app
-type UserEntry struct {
-	User  User
-	Error error
+type Restaurant struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
 }

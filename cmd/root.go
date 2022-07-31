@@ -40,4 +40,10 @@ func Execute() {
 
 func init() {
 	//rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	cobra.OnInitialize(initConfig)
+}
+
+// initConfig reads config from dotenv
+func initConfig() {
+	//config.LoadDBCfg()
 }

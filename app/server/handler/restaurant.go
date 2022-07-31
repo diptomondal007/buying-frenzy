@@ -18,6 +18,7 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 	"time"
 
@@ -38,14 +39,19 @@ func (h *handler) openRestaurants(c echo.Context) error {
 		now = n
 	}
 
+	log.Println(now)
+	rs, err := h.rc.ListRestaurantsByFilter()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, nil)
+	}
+
 	return c.JSON(http.StatusOK, common.Resp{
 		Message: "request successful!",
-		Data:    now,
+		Data:    rs,
 	})
 }
 
 func (h *handler) list(c echo.Context) error {
-
 	return c.JSON(http.StatusOK, common.Resp{
 		Message: "request successful!",
 		Data:    "",

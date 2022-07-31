@@ -1,0 +1,30 @@
+version: "3.6"
+services:
+  server:
+    container_name: api_server
+    build:
+      context: .
+    command:
+      - serve
+    depends_on:
+      - postgres
+    environment:
+      - ENV=.env.local
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/app
+
+  postgres:
+    image: postgres:9.6
+    command: ["postgres", "-c", "log_statement=all"]
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=food
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+volumes:
+  postgres_data:

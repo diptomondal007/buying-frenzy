@@ -16,3 +16,34 @@
 // under the License.
 
 package common
+
+import "time"
+
+type PGTime time.Time
+
+const (
+	PGTimeFormat        = "15:04:05"
+	PGTimeHOURMINFormat = "15:04"
+)
+
+// UserInfo is the model for db user_info
+type UserInfo struct {
+	ID          int     `db:"id"`
+	Name        string  `db:"name"`
+	CashBalance float64 `db:"cash_balance"`
+}
+
+// Restaurant is the model for restaurant
+type Restaurant struct {
+	ID          int     `db:"id"`
+	Name        string  `db:"name"`
+	CashBalance float64 `db:"cash_balance"`
+}
+
+type OpenHour struct {
+	id           int
+	WeekName     string
+	StartTime    PGTime
+	ClosingTime  PGTime
+	RestaurantID int `db:"restaurant_id"`
+}

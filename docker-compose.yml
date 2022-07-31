@@ -9,13 +9,18 @@ services:
     depends_on:
       - postgres
     environment:
-      - ENV=.env.local
+      - DB_HOST=postgres_db
+      - DB_PORT=5432
+      - DB_USER=test
+      - DB_PASSWORD=password
+      - DB_NAME=food
     ports:
       - "8000:8000"
     volumes:
       - ./:/app
 
   postgres:
+    container_name: postgres_db
     image: postgres:9.6
     command: ["postgres", "-c", "log_statement=all"]
     ports:

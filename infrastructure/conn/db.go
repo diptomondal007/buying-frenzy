@@ -15,32 +15,42 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package config
+package conn
 
 import (
-	"os"
+	"fmt"
+	"log"
+
+	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
+
+	"github.com/diptomondal007/buying-frenzy/infrastructure/config"
 )
 
-type Config struct {
-	DB DB
+type postgresClient struct {
+	*sqlx.DB
 }
 
-var c *Config
+var (
+	db *postgresClient
+)
 
-func Get() *Config {
-	if c == nil {
-		c = load()
-	}
-	return c
+func GetDB() *postgresClient {
+	return db
 }
 
-func load() *Config {
-	d := DB{
-		Host:     os.Getenv("DB_HOST"),
-		Username: os.Getenv("DB_USER"),
-		Password: os.Getenv("DB_PASSWORD"),
-		Name:     os.Getenv("DB_NAME"),
-		SSLMode:  false,
+func ConnectDB() error {
+	if db != nil {
+		log.Println("db already initialized!")
+		return nil
 	}
-	return &Config{DB: d}
+	cfg := config.Get().DB
+
+	d, err := sqlx.Connect("postgres", fmt.Sprintf("host=%s port=5432 user=%s password=%s dbname=%s sslmode=disable", cfg.Host, cfg.Username, cfg.Password, cfg.Name))
+	if err != nil {
+		return err
+	}
+
+	db = &postgresClient{d}
+	return nil
 }

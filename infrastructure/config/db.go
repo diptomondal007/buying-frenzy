@@ -17,30 +17,11 @@
 
 package config
 
-import (
-	"os"
-)
-
-type Config struct {
-	DB DB
-}
-
-var c *Config
-
-func Get() *Config {
-	if c == nil {
-		c = load()
-	}
-	return c
-}
-
-func load() *Config {
-	d := DB{
-		Host:     os.Getenv("DB_HOST"),
-		Username: os.Getenv("DB_USER"),
-		Password: os.Getenv("DB_PASSWORD"),
-		Name:     os.Getenv("DB_NAME"),
-		SSLMode:  false,
-	}
-	return &Config{DB: d}
+// DB holds the config for db
+type DB struct {
+	Host     string
+	Username string
+	Password string
+	Name     string
+	SSLMode  bool
 }

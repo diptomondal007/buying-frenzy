@@ -122,3 +122,22 @@ func (h *handler) list(c echo.Context) error {
 		Data:    rs,
 	})
 }
+
+func (h *handler) search(c echo.Context) error {
+	q := c.QueryParam("q")
+
+	if q == "" {
+		return c.JSON(http.StatusBadRequest, common.ErrResp{Error: "search term missing!"})
+	}
+
+	rs, err := h.rc.SearchRestaurant(q)
+	if err != nil {
+		log.Println("error while fetching from db. error: ", err)
+		return c.JSON(http.StatusInternalServerError, common.ErrResp{Error: "something went wrong"})
+	}
+
+	return c.JSON(http.StatusOK, common.Resp{
+		Message: "request successful!",
+		Data:    rs,
+	})
+}

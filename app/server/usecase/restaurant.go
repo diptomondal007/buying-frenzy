@@ -28,10 +28,15 @@ import (
 type RestaurantUseCase interface {
 	ListRestaurantsByFilter(datetime time.Time) ([]*common.RestaurantResp, error)
 	ListRestaurantsByDishFilter(filter common.RestaurantFilter) ([]*common.RestaurantResp, error)
+	SearchRestaurant(term string) ([]*common.RestaurantResp, error)
 }
 
 type restaurantUseCase struct {
 	repo repository.Restaurant
+}
+
+func NewRestaurantUseCase(repo repository.Restaurant) RestaurantUseCase {
+	return &restaurantUseCase{repo: repo}
 }
 
 func (r restaurantUseCase) ListRestaurantsByFilter(datetime time.Time) ([]*common.RestaurantResp, error) {
@@ -52,8 +57,12 @@ func (r restaurantUseCase) ListRestaurantsByDishFilter(filter common.RestaurantF
 	return toRestaurantList(rs), nil
 }
 
-func NewRestaurantUseCase(repo repository.Restaurant) RestaurantUseCase {
-	return &restaurantUseCase{repo: repo}
+func (r restaurantUseCase) SearchRestaurant(term string) ([]*common.RestaurantResp, error) {
+	rs, err := r.repo.SearchRestaurant(term)
+	if err != nil {
+		return nil, err
+	}
+	return toRestaurantList(rs), nil
 }
 
 func toRestaurantList(rs []*model.Restaurant) []*common.RestaurantResp {

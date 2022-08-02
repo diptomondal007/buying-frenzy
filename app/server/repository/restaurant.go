@@ -18,11 +18,11 @@
 package repository
 
 import (
-	"github.com/diptomondal007/buying-frenzy/app/common"
-	"github.com/diptomondal007/buying-frenzy/app/common/model"
 	"github.com/doug-martin/goqu/v9"
 	"github.com/jmoiron/sqlx"
-	"log"
+
+	"github.com/diptomondal007/buying-frenzy/app/common"
+	"github.com/diptomondal007/buying-frenzy/app/common/model"
 )
 
 type restaurant struct {
@@ -32,6 +32,7 @@ type restaurant struct {
 type Restaurant interface {
 	GetOpenRestaurants(hour, minute int, weekDay string) ([]*model.Restaurant, error)
 	GetRestaurantsByDishFilter(f common.RestaurantFilter) ([]*model.Restaurant, error)
+	SearchRestaurant(term string) ([]*model.Restaurant, error)
 }
 
 func NewRestaurantRepo(db *sqlx.DB) Restaurant {
@@ -57,8 +58,7 @@ func (r restaurant) GetOpenRestaurants(hour, minute int, weekDay string) ([]*mod
 				"oh.start_time":   goqu.Op{"gte": t},
 				"oh.closing_time": goqu.Op{"lte": t},
 			},
-		)).GroupBy("r.id").
-		ToSQL()
+		)).GroupBy("r.id").ToSQL()
 
 	if err != nil {
 		return nil, err
@@ -82,16 +82,36 @@ func (r restaurant) GetRestaurantsByDishFilter(f common.RestaurantFilter) ([]*mo
 			},
 			goqu.Ex{
 				"price": goqu.Op{"gte": f.PriceRange.Low},
-			})).GroupBy("r.id")
+			}),
+		).GroupBy("r.id").Order(goqu.I("r.name").Asc())
 
 	if f.QuantityRange.MoreThan != nil {
 		d = d.Having(goqu.COUNT(goqu.I("r.id")).Gt(*f.QuantityRange.MoreThan))
 	}
 
 	if f.QuantityRange.LessThan != nil {
-		log.Println("")
 		d = d.Having(goqu.COUNT(goqu.I("r.id")).Lt(*f.QuantityRange.LessThan))
 	}
+
+	sql, _, err := d.ToSQL()
+	if err != nil {
+		return nil, err
+	}
+
+	if err := r.db.Select(&res, sql); err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (r restaurant) SearchRestaurant(term string) ([]*model.Restaurant, error) {
+	res := make([]*model.Restaurant, 0)
+
+	d := goqu.From(goqu.T(model.RESTAURANTTable).As("r")).
+		Select("r.id", "r.name").
+		Where(
+			goqu.L("SIMILARITY(name, ?)", term).Gt(0.2),
+		).Order(goqu.L("SIMILARITY(name, ?)", term).Desc())
 
 	sql, _, err := d.ToSQL()
 	if err != nil {

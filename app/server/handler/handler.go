@@ -35,7 +35,7 @@ func NewHandler(e *echo.Echo, rc usecase.RestaurantUseCase) {
 	rg := e.Group("/api/v1/restaurant")
 	rg.GET("/open", h.openRestaurants)
 	rg.GET("/list", h.list)
-	//rg.GET("/search")
+	rg.GET("/search", h.search)
 	//
 	//ug := e.Group("/api/v1/user")
 	//ug.POST("/purchase")

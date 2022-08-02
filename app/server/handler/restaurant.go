@@ -20,29 +20,33 @@ package handler
 import (
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
+	"github.com/araddon/dateparse"
 	"github.com/labstack/echo/v4"
 
 	"github.com/diptomondal007/buying-frenzy/app/common"
 )
 
+//
 func (h *handler) openRestaurants(c echo.Context) error {
 	now := time.Now()
 
 	if c.QueryParam("date_time") != "" {
-		n, err := time.Parse(time.RFC3339, c.QueryParam("date_time"))
+		n, err := dateparse.ParseAny(c.QueryParam("date_time"))
 		if err != nil {
 			h.e.Logger.Error("error while parsing input date time", err)
 			return c.JSON(http.StatusBadRequest, common.ErrResp{Error: "bad format of date time"})
 		}
-		now = n
+		now = n.UTC()
+		log.Println("now", now)
 	}
 
-	log.Println(now)
-	rs, err := h.rc.ListRestaurantsByFilter()
+	rs, err := h.rc.ListRestaurantsByFilter(now)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, nil)
+		log.Println("error while fetching from db. error: ", err)
+		return c.JSON(http.StatusInternalServerError, common.ErrResp{Error: "something went wrong"})
 	}
 
 	return c.JSON(http.StatusOK, common.Resp{
@@ -52,8 +56,69 @@ func (h *handler) openRestaurants(c echo.Context) error {
 }
 
 func (h *handler) list(c echo.Context) error {
+	lowP := c.QueryParam("price_low")
+	highP := c.QueryParam("price_high")
+
+	if lowP == "" || highP == "" {
+		return c.JSON(http.StatusBadRequest, common.ErrResp{Error: "low or high value of price range is missing!"})
+	}
+
+	lessThan := c.QueryParam("less_than")
+	moreThan := c.QueryParam("more_than")
+	if lessThan == "" && moreThan == "" {
+		return c.JSON(http.StatusBadRequest, common.ErrResp{Error: "both more_than and less_than param can't be empty!"})
+	}
+
+	if lessThan != "" && moreThan != "" {
+		return c.JSON(http.StatusBadRequest, common.ErrResp{Error: "both more_than and less_than param exist! please use one of them at a time"})
+	}
+
+	lowPF, err := strconv.ParseFloat(lowP, 64)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, common.ErrResp{Error: "invalid value for low range"})
+	}
+
+	highPF, err := strconv.ParseFloat(highP, 64)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, common.ErrResp{Error: "invalid value for high range"})
+	}
+
+	var lessThanV *int
+	var moreThanV *int
+
+	if lessThan != "" {
+		v, err := strconv.Atoi(lessThan)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, common.ErrResp{Error: "invalid value for 'less_than' param"})
+		}
+		lessThanV = &v
+	}
+
+	if moreThan != "" {
+		v, err := strconv.Atoi(moreThan)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, common.ErrResp{Error: "invalid value for 'more than' param"})
+		}
+		moreThanV = &v
+	}
+
+	rs, err := h.rc.ListRestaurantsByDishFilter(common.RestaurantFilter{
+		PriceRange: common.PriceRange{
+			High: highPF,
+			Low:  lowPF,
+		},
+		QuantityRange: common.QuantityRange{
+			MoreThan: moreThanV,
+			LessThan: lessThanV,
+		},
+	})
+	if err != nil {
+		log.Println("error while fetching from db. error: ", err)
+		return c.JSON(http.StatusInternalServerError, common.ErrResp{Error: "something went wrong"})
+	}
+
 	return c.JSON(http.StatusOK, common.Resp{
 		Message: "request successful!",
-		Data:    "",
+		Data:    rs,
 	})
 }

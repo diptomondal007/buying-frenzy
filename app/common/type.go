@@ -49,3 +49,18 @@ type Menu struct {
 	DishName string  `json:"dishName"`
 	Price    float64 `json:"price"`
 }
+
+type RestaurantFilter struct {
+	PriceRange    PriceRange
+	QuantityRange QuantityRange
+}
+
+type PriceRange struct {
+	High float64
+	Low  float64
+}
+
+type QuantityRange struct {
+	MoreThan *int
+	LessThan *int
+}

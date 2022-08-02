@@ -20,6 +20,7 @@ package etl
 import (
 	"github.com/araddon/dateparse"
 	uuid "github.com/satori/go.uuid"
+	"log"
 
 	"github.com/diptomondal007/buying-frenzy/app/common"
 	"github.com/diptomondal007/buying-frenzy/app/common/model"
@@ -120,7 +121,7 @@ func toOpenHours(rid, h string) []model.OpenHour {
 			openHours = append(openHours, model.OpenHour{
 				WeekName:     s.fromWeekday.String(),
 				StartTime:    model.NewPGTimeFromHourMinute(s.from.hour, s.from.minute),
-				ClosingTime:  model.NewPGTimeFromHourMinute(s.from.hour, s.from.minute),
+				ClosingTime:  model.NewPGTimeFromHourMinute(s.to.hour, s.to.minute),
 				RestaurantID: rid,
 			})
 			continue
@@ -136,11 +137,14 @@ func toOpenHours(rid, h string) []model.OpenHour {
 			from = temp
 		}
 
-		for i := from; i <= to; i++ {
+		log.Println("from >>>>>>", from)
+		log.Println(">>>> to", to)
+
+		for f := from; f <= to; f++ {
 			openHours = append(openHours, model.OpenHour{
-				WeekName:     longDayNames[i],
+				WeekName:     longDayNames[f],
 				StartTime:    model.NewPGTimeFromHourMinute(s.from.hour, s.from.minute),
-				ClosingTime:  model.NewPGTimeFromHourMinute(s.from.hour, s.from.minute),
+				ClosingTime:  model.NewPGTimeFromHourMinute(s.to.hour, s.to.minute),
 				RestaurantID: rid,
 			})
 		}

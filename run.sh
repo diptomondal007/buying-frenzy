@@ -6,9 +6,6 @@ export DB_USER=test
 export DB_PASSWORD=password
 export DB_NAME=food
 
-echo "docker containers starting ..."
-docker-compose up postgres
-
 echo "building application ...."
 go build -v .
 ./buying-frenzy serve

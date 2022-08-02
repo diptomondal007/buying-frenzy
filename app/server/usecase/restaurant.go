@@ -18,21 +18,34 @@
 package usecase
 
 import (
+	"time"
+
 	"github.com/diptomondal007/buying-frenzy/app/common"
 	"github.com/diptomondal007/buying-frenzy/app/common/model"
 	"github.com/diptomondal007/buying-frenzy/app/server/repository"
 )
 
 type RestaurantUseCase interface {
-	ListRestaurantsByFilter() ([]*common.Restaurant, error)
+	ListRestaurantsByFilter(datetime time.Time) ([]*common.RestaurantResp, error)
+	ListRestaurantsByDishFilter(filter common.RestaurantFilter) ([]*common.RestaurantResp, error)
 }
 
 type restaurantUseCase struct {
 	repo repository.Restaurant
 }
 
-func (r restaurantUseCase) ListRestaurantsByFilter() ([]*common.Restaurant, error) {
-	rs, err := r.repo.GetOpenRestaurants()
+func (r restaurantUseCase) ListRestaurantsByFilter(datetime time.Time) ([]*common.RestaurantResp, error) {
+	weekDay := datetime.Weekday().String()
+
+	rs, err := r.repo.GetOpenRestaurants(datetime.Hour(), datetime.Minute(), weekDay)
+	if err != nil {
+		return nil, err
+	}
+	return toRestaurantList(rs), nil
+}
+
+func (r restaurantUseCase) ListRestaurantsByDishFilter(filter common.RestaurantFilter) ([]*common.RestaurantResp, error) {
+	rs, err := r.repo.GetRestaurantsByDishFilter(filter)
 	if err != nil {
 		return nil, err
 	}
@@ -43,10 +56,10 @@ func NewRestaurantUseCase(repo repository.Restaurant) RestaurantUseCase {
 	return &restaurantUseCase{repo: repo}
 }
 
-func toRestaurantList(rs []*model.Restaurant) []*common.Restaurant {
-	resp := make([]*common.Restaurant, 0)
+func toRestaurantList(rs []*model.Restaurant) []*common.RestaurantResp {
+	resp := make([]*common.RestaurantResp, 0)
 	for i := range rs {
-		resp = append(resp, &common.Restaurant{
+		resp = append(resp, &common.RestaurantResp{
 			ID:   rs[i].ID,
 			Name: rs[i].Name,
 		})

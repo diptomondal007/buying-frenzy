@@ -18,8 +18,9 @@
 package cmd
 
 import (
-	"github.com/diptomondal007/buying-frenzy/app/server"
 	"github.com/spf13/cobra"
+
+	"github.com/diptomondal007/buying-frenzy/app/server"
 )
 
 // serveCmd represents the serve command

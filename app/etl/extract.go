@@ -18,6 +18,7 @@
 package etl
 
 import (
+	"fmt"
 	"log"
 	"path/filepath"
 
@@ -39,10 +40,10 @@ type ETL struct {
 }
 
 // NewETL a new instance of ETL
-func NewETL(args Args) *ETL {
+func NewETL(args Args, t Transformer) *ETL {
 	return &ETL{
 		Args:        args,
-		Transformer: newTransformer(newLoader()),
+		Transformer: t,
 	}
 }
 
@@ -52,6 +53,12 @@ func (e *ETL) Run() error {
 }
 
 func (e *ETL) extract() error {
+	_ = e.extractRestaurant()
+	_ = e.extractUser()
+	return nil
+}
+
+func (e *ETL) extractUser() error {
 	s := json_steam.NewJSONStreamer()
 	go s.Start(filepath.Join(e.Args.Directory, e.Args.UserData))
 
@@ -70,11 +77,43 @@ func (e *ETL) extract() error {
 		u, ok := data.Data.(*common.User)
 		if !ok {
 			log.Println("not ok")
+			return fmt.Errorf("error asserting user data")
 		}
 
 		err := e.Transformer.transformUserData(u)
 		if err != nil {
-			log.Println("error while transforming data >>>> ", err)
+			log.Println("error while transforming data. user id >> ", u.ID, " err: ", err)
+			return nil
+		}
+	}
+	return nil
+}
+
+func (e *ETL) extractRestaurant() error {
+	s := json_steam.NewJSONStreamer()
+	go s.Start(filepath.Join(e.Args.Directory, e.Args.RestaurantData))
+
+	go func() {
+		for _ = range s.Want() {
+			s.Value() <- &common.Restaurant{}
+		}
+	}()
+
+	for data := range s.Watch() {
+		if data.Error != nil {
+			log.Println(data.Error)
+			return data.Error
+		}
+
+		r, ok := data.Data.(*common.Restaurant)
+		if !ok {
+			log.Println("not ok")
+			continue
+		}
+
+		err := e.Transformer.transformRestaurantData(r)
+		if err != nil {
+			log.Println("error while transforming restaurant data >>>> ", err)
 			return nil
 		}
 	}

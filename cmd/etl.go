@@ -24,6 +24,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/diptomondal007/buying-frenzy/app/etl"
+	"github.com/diptomondal007/buying-frenzy/infrastructure/conn"
 )
 
 var (
@@ -39,13 +40,22 @@ var etlCmd = &cobra.Command{
 	Short: "etl sub command extract data from json files and load them to database.",
 	Long:  `etl sub command extract data from json files and load them to database.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		err := conn.ConnectDB()
+		if err != nil {
+			log.Println("db connection unsuccessful! error: ", err)
+			os.Exit(1)
+		}
+
+		loader := etl.NewLoader(conn.GetDB().DB)
+		t := etl.NewTransformer(loader)
+
 		e := etl.NewETL(etl.Args{
 			Directory:      dataDir,
 			UserData:       userData,
 			RestaurantData: restaurantData,
-		})
+		}, t)
 
-		err := e.Run()
+		err = e.Run()
 		if err != nil {
 			log.Println(err)
 			// we can exit from the app.

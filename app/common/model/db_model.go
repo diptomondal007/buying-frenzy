@@ -26,6 +26,14 @@ const (
 	PGTimeHOURMINFormat = "15:04"
 )
 
+const (
+	USERInfoTable        = "user_info"
+	PURCHASEHistoryTable = "purchase_history"
+	RESTAURANTTable      = "restaurant"
+	DISHTable            = "dish"
+	OPENHourTable        = "open_hour"
+)
+
 // UserInfo is the model for db user_info
 type UserInfo struct {
 	ID          int     `db:"id"`
@@ -35,28 +43,31 @@ type UserInfo struct {
 
 // Restaurant is the model for restaurant
 type Restaurant struct {
-	ID          int     `db:"id"`
+	ID          string  `db:"id"`
 	Name        string  `db:"name"`
 	CashBalance float64 `db:"cash_balance"`
 }
 
 type OpenHour struct {
-	id           int    `db:"restaurant_id"`
-	WeekName     string `db:"restaurant_id"`
-	StartTime    PGTime `db:"restaurant_id"`
-	ClosingTime  PGTime `db:"restaurant_id"`
-	RestaurantID int    `db:"restaurant_id"`
+	ID           int     `db:"-"`
+	WeekName     string  `db:"week_name"`
+	StartTime    *PGTime `db:"start_time"`
+	ClosingTime  *PGTime `db:"closing_time"`
+	RestaurantID string  `db:"restaurant_id"`
 }
 
 type Dish struct {
-	id           int     `db:"id"`
+	ID           string  `db:"id"`
 	Name         string  `db:"name"`
 	Price        float64 `db:"price"`
-	RestaurantID int     `db:"restaurant_id"`
+	RestaurantID string  `db:"restaurant_id"`
 }
 
 type PurchaseHistory struct {
-	id           int `db:"id"`
-	RestaurantID int `db:"restaurant_id"`
-	DishID       int `db:"dish_id"`
+	ID                int       `db:"-"`
+	TransactionAmount float64   `db:"transaction_amount"`
+	TransactionDate   time.Time `db:"transaction_date"`
+	RestaurantID      string    `db:"restaurant_id"`
+	DishID            string    `db:"dish_id"`
+	UserID            int       `db:"user_id"`
 }

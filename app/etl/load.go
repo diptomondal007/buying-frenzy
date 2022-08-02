@@ -17,16 +17,70 @@
 
 package etl
 
+import (
+	"log"
+
+	"github.com/doug-martin/goqu/v9"
+	"github.com/jmoiron/sqlx"
+
+	"github.com/diptomondal007/buying-frenzy/app/common/model"
+)
+
 type Loader interface {
-	LoadUserData() error
+	loadUserData(user model.UserInfo, histories []model.PurchaseHistory) error
+	loadRestaurantData(r model.Restaurant, s []model.OpenHour, m []model.Dish) error
 }
 
-type loader struct{}
-
-func (l loader) LoadUserData() error {
-	panic("implement me")
+type loader struct {
+	db *sqlx.DB
 }
 
-func newLoader() Loader {
-	return loader{}
+func (l loader) loadUserData(user model.UserInfo, histories []model.PurchaseHistory) error {
+	tx := l.db.MustBegin()
+
+	sql, _, err := goqu.Insert(model.USERInfoTable).Rows(user).ToSQL()
+	if err != nil {
+		return err
+	}
+	tx.MustExec(sql)
+	log.Println(sql)
+
+	if len(histories) > 0 {
+		sql, _, err = goqu.Insert(model.PURCHASEHistoryTable).Rows(histories).ToSQL()
+		if err != nil {
+			return err
+		}
+		tx.MustExec(sql)
+		log.Println(sql)
+	}
+	return tx.Commit()
+}
+
+func (l loader) loadRestaurantData(r model.Restaurant, s []model.OpenHour, m []model.Dish) error {
+	tx := l.db.MustBegin()
+	sql, _, err := goqu.Insert(model.RESTAURANTTable).Rows(&r).ToSQL()
+	if err != nil {
+		return err
+	}
+	tx.MustExec(sql)
+
+	sql, _, err = goqu.Insert(model.OPENHourTable).Rows(s).ToSQL()
+	log.Println(sql)
+	if err != nil {
+		return err
+	}
+	tx.MustExec(sql)
+
+	sql, _, err = goqu.Insert(model.DISHTable).Rows(m).ToSQL()
+	if err != nil {
+		return err
+	}
+	tx.MustExec(sql)
+	return tx.Commit()
+}
+
+func NewLoader(db *sqlx.DB) Loader {
+	return &loader{
+		db: db,
+	}
 }

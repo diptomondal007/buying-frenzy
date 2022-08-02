@@ -3,7 +3,6 @@ package etl
 import (
 	"strconv"
 	"strings"
-	"time"
 )
 
 type weekDay int
@@ -44,18 +43,14 @@ func (w *weekDay) String() string {
 	return longDayNames[*w]
 }
 
-type exactSchedule struct {
-	weekDay string
-	from    time.Time
-	to      time.Time
-}
-
 func parseOpeningHours(openHours string) []*schedule {
-	time.Now().UTC().Weekday()
 	days := strings.Split(openHours, "/")
 	schedules := make([]*schedule, 0)
 
 	for i := range days {
+		if days[i] == "" {
+			continue
+		}
 		schedules = append(schedules, parseSchedule(days[i]))
 	}
 	return schedules

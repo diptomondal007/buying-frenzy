@@ -7,8 +7,8 @@ export DB_PASSWORD=password
 export DB_NAME=food
 
 echo "docker containers starting ..."
-docker-compose up postgres
+docker-compose up postgres -d
 
 echo "building application ...."
 go build -v .
-./buying-frenzy serve
+./buying-frenzy etl -d data

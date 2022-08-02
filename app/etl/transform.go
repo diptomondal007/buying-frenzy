@@ -17,21 +17,133 @@
 
 package etl
 
-import "github.com/diptomondal007/buying-frenzy/app/common"
+import (
+	"github.com/araddon/dateparse"
+	uuid "github.com/satori/go.uuid"
+
+	"github.com/diptomondal007/buying-frenzy/app/common"
+	"github.com/diptomondal007/buying-frenzy/app/common/model"
+)
 
 type Transformer interface {
 	transformUserData(user *common.User) error
+	transformRestaurantData(r *common.Restaurant) error
 }
 
 type transformer struct {
 	loader Loader
+	dishM  map[string]string
+	restM  map[string]string
 }
 
 func (t transformer) transformUserData(user *common.User) error {
-	//TODO implement me
-	return nil
+	um := model.UserInfo{
+		ID:          user.ID,
+		Name:        user.Name,
+		CashBalance: user.CashBalance,
+	}
+
+	return t.loader.loadUserData(um, t.toPurchaseHistoryModel(user.ID, user.PurchaseHistory))
 }
 
-func newTransformer(loader Loader) Transformer {
-	return transformer{loader: loader}
+func (t transformer) transformRestaurantData(restaurant *common.Restaurant) error {
+	rid := uuid.NewV4().String()
+	r := model.Restaurant{
+		ID:          rid,
+		Name:        restaurant.RestaurantName,
+		CashBalance: restaurant.CashBalance,
+	}
+
+	t.restM[restaurant.RestaurantName] = rid
+
+	openHours := toOpenHours(rid, restaurant.OpeningHours)
+	mList := t.toMenuList(rid, restaurant.Menu)
+
+	return t.loader.loadRestaurantData(r, openHours, mList)
+}
+
+func NewTransformer(loader Loader) Transformer {
+	return transformer{
+		loader: loader,
+		dishM:  make(map[string]string),
+		restM:  make(map[string]string),
+	}
+}
+
+func (t transformer) toPurchaseHistoryModel(userID int, history []common.PurchaseHistory) []model.PurchaseHistory {
+	hs := make([]model.PurchaseHistory, 0)
+
+	for i := range history {
+		ti, _ := dateparse.ParseLocal(history[i].TransactionDate)
+		restaurantID := t.restM[history[i].RestaurantName]
+		dishID := t.dishM[history[i].DishName]
+
+		hs = append(hs, model.PurchaseHistory{
+			TransactionAmount: history[i].TransactionAmount,
+			TransactionDate:   ti.UTC(),
+			RestaurantID:      restaurantID,
+			DishID:            dishID,
+			UserID:            userID,
+		})
+	}
+	return hs
+}
+
+func (t transformer) toMenuList(rid string, m []common.Menu) []model.Dish {
+	d := make([]model.Dish, 0)
+	for i := range m {
+		id := uuid.NewV4().String()
+		t.dishM[m[i].DishName] = id
+		d = append(d, model.Dish{
+			ID:           id,
+			Name:         m[i].DishName,
+			Price:        m[i].Price,
+			RestaurantID: rid,
+		})
+	}
+	return d
+}
+
+func toOpenHours(rid, h string) []model.OpenHour {
+	openHours := make([]model.OpenHour, 0)
+	schedules := parseOpeningHours(h)
+
+	for i := range schedules {
+		s := schedules[i]
+		from := 0
+		to := 0
+		if s.fromWeekday != nil {
+			from = int(*s.fromWeekday)
+		}
+
+		if s.toWeekDay == nil {
+			openHours = append(openHours, model.OpenHour{
+				WeekName:     s.fromWeekday.String(),
+				StartTime:    model.NewPGTimeFromHourMinute(s.from.hour, s.from.minute),
+				ClosingTime:  model.NewPGTimeFromHourMinute(s.from.hour, s.from.minute),
+				RestaurantID: rid,
+			})
+			continue
+		}
+
+		to = int(*s.toWeekDay)
+		temp := 0
+
+		// swap
+		if from > to {
+			temp = to
+			to = from
+			from = temp
+		}
+
+		for i := from; i <= to; i++ {
+			openHours = append(openHours, model.OpenHour{
+				WeekName:     longDayNames[i],
+				StartTime:    model.NewPGTimeFromHourMinute(s.from.hour, s.from.minute),
+				ClosingTime:  model.NewPGTimeFromHourMinute(s.from.hour, s.from.minute),
+				RestaurantID: rid,
+			})
+		}
+	}
+	return openHours
 }

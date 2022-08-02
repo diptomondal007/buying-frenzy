@@ -33,7 +33,19 @@ type PurchaseHistory struct {
 	TransactionDate   string  `json:"transactionDate"`
 }
 
-type Restaurant struct {
-	ID   int    `json:"id"`
+type RestaurantResp struct {
+	ID   string `json:"id"`
 	Name string `json:"name"`
+}
+
+type Restaurant struct {
+	RestaurantName string  `json:"restaurantName"`
+	CashBalance    float64 `json:"cashBalance"`
+	OpeningHours   string  `json:"openingHours"`
+	Menu           []Menu  `json:"menu"`
+}
+
+type Menu struct {
+	DishName string  `json:"dishName"`
+	Price    float64 `json:"price"`
 }

@@ -16,3 +16,38 @@
 // under the License.
 
 package usecase
+
+import (
+	"github.com/diptomondal007/buying-frenzy/app/common/model"
+
+	"github.com/diptomondal007/buying-frenzy/app/common"
+	"github.com/diptomondal007/buying-frenzy/app/server/repository"
+)
+
+// UserUseCase ...
+type userUseCase struct {
+	repo repository.UserRepository
+}
+
+// UserUseCase is interface for user use case
+type UserUseCase interface {
+	PurchaseDish(userID int, restaurantID, menuID string) (*common.UserResp, error)
+}
+
+// NewUserUseCase returns a new user use case instance
+func NewUserUseCase(repo repository.UserRepository) UserUseCase {
+	return &userUseCase{repo: repo}
+}
+
+func (u userUseCase) PurchaseDish(userID int, restaurantID, menuID string) (*common.UserResp, error) {
+	us, err := u.repo.PurchaseDish(userID, restaurantID, menuID)
+	if err != nil {
+		return nil, err
+	}
+
+	return toUserResp(us), nil
+}
+
+func toUserResp(info model.UserInfo) *common.UserResp {
+	return &common.UserResp{Balance: info.CashBalance}
+}

@@ -22,8 +22,8 @@ import "time"
 type PGTime time.Time
 
 const (
-	PGTimeFormat        = "15:04:05"
-	PGTimeHOURMINFormat = "15:04"
+	PGTimeFormat = "15:04:05"
+	// PGTimeHOURMINFormat = "15:04"
 )
 
 const (
@@ -70,4 +70,11 @@ type PurchaseHistory struct {
 	RestaurantID      string    `db:"restaurant_id"`
 	DishID            string    `db:"dish_id"`
 	UserID            int       `db:"user_id"`
+}
+
+type RestaurantWithDish struct {
+	RestaurantID string `db:"r_id"`
+	DishID       string `db:"d_id"`
+	//DishName     string  `db:"d_name"`
+	DishPrice float64 `db:"d_price"`
 }

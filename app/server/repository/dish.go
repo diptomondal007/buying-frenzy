@@ -15,47 +15,47 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package usecase
+package repository
 
 import (
-	"github.com/diptomondal007/buying-frenzy/app/common"
+	"github.com/doug-martin/goqu/v9"
+	"github.com/jmoiron/sqlx"
+
 	"github.com/diptomondal007/buying-frenzy/app/common/model"
-	"github.com/diptomondal007/buying-frenzy/app/server/repository"
 )
 
-// DishUseCase is interface for dish use case
-type DishUseCase interface {
-	SearchDish(term string) ([]*common.MenuResp, error)
+// dishRepository ...
+type dishRepository struct {
+	db *sqlx.DB
 }
 
-// dishUseCase ...
-type dishUseCase struct {
-	repo repository.DishRepository
+// DishRepository ...
+type DishRepository interface {
+	SearchDish(term string) ([]*model.Dish, error)
 }
 
-// NewDishUseCase returns a new dish use case instance
-func NewDishUseCase(repo repository.DishRepository) DishUseCase {
-	return &dishUseCase{repo: repo}
+// NewDishRepo returns a new dish repo instance
+func NewDishRepo(db *sqlx.DB) DishRepository {
+	return &dishRepository{db: db}
 }
 
-// SearchDish ...
-func (d dishUseCase) SearchDish(term string) ([]*common.MenuResp, error) {
-	rs, err := d.repo.SearchDish(term)
+// SearchDish is the repo for searching dish in db
+func (dr dishRepository) SearchDish(term string) ([]*model.Dish, error) {
+	dishes := make([]*model.Dish, 0)
+
+	d := goqu.From(goqu.T(model.DISHTable).As("d")).
+		Select("d.id", "d.name", "d.price").
+		Where(
+			goqu.L("SIMILARITY(name, ?)", term).Gt(0.2),
+		).Order(goqu.L("SIMILARITY(name, ?)", term).Desc())
+
+	sql, _, err := d.ToSQL()
 	if err != nil {
 		return nil, err
 	}
-	return toDishList(rs), nil
-}
 
-// toDishList ...
-func toDishList(ds []*model.Dish) []*common.MenuResp {
-	resp := make([]*common.MenuResp, 0)
-	for i := range ds {
-		resp = append(resp, &common.MenuResp{
-			ID:    ds[i].ID,
-			Name:  ds[i].Name,
-			Price: ds[i].Price,
-		})
+	if err := dr.db.Select(&dishes, sql); err != nil {
+		return nil, err
 	}
-	return resp
+	return dishes, nil
 }

@@ -26,10 +26,12 @@ import (
 type handler struct {
 	e  *echo.Echo
 	rc usecase.RestaurantUseCase
+	dc usecase.DishUseCase
+	uc usecase.UserUseCase
 }
 
-func NewHandler(e *echo.Echo, rc usecase.RestaurantUseCase) {
-	h := handler{e: e, rc: rc}
+func NewHandler(e *echo.Echo, rc usecase.RestaurantUseCase, dc usecase.DishUseCase, uc usecase.UserUseCase) {
+	h := handler{e: e, rc: rc, dc: dc, uc: uc}
 
 	// restaurant group
 	rg := e.Group("/api/v1/restaurant")
@@ -37,9 +39,9 @@ func NewHandler(e *echo.Echo, rc usecase.RestaurantUseCase) {
 	rg.GET("/list", h.list)
 	rg.GET("/search", h.search)
 	//
-	//ug := e.Group("/api/v1/user")
-	//ug.POST("/purchase")
+	ug := e.Group("/api/v1/user")
+	ug.POST("/purchase/:user_id", h.purchase)
 	//
-	//dg := e.Group("/api/v1/dishes")
-	//dg.GET("/search")
+	dg := e.Group("/api/v1/dish")
+	dg.GET("/search", h.searchDish)
 }

@@ -16,3 +16,31 @@
 // under the License.
 
 package handler
+
+import (
+	"log"
+	"net/http"
+
+	"github.com/labstack/echo/v4"
+
+	"github.com/diptomondal007/buying-frenzy/app/common"
+)
+
+func (h *handler) searchDish(c echo.Context) error {
+	q := c.QueryParam("q")
+
+	if q == "" {
+		return c.JSON(http.StatusBadRequest, common.ErrResp{Error: "search term missing!"})
+	}
+
+	rs, err := h.dc.SearchDish(q)
+	if err != nil {
+		log.Println("error while fetching from db. error: ", err)
+		return c.JSON(http.StatusInternalServerError, common.ErrResp{Error: "something went wrong"})
+	}
+
+	return c.JSON(http.StatusOK, common.Resp{
+		Message: "request successful!",
+		Data:    rs,
+	})
+}

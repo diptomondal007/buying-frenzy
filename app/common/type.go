@@ -60,7 +60,22 @@ type PriceRange struct {
 	Low  float64
 }
 
+type MenuResp struct {
+	ID    string  `json:"id"`
+	Name  string  `json:"name"`
+	Price float64 `json:"price"`
+}
+
 type QuantityRange struct {
 	MoreThan *int
 	LessThan *int
+}
+
+type UserResp struct {
+	Balance float64 `json:"current_balance"`
+}
+
+type PurchaseRequest struct {
+	RestaurantID string `json:"restaurant_id"`
+	MenuID       string `json:"menu_id"`
 }

@@ -32,16 +32,12 @@ import (
 	"github.com/diptomondal007/buying-frenzy/infrastructure/conn"
 )
 
-func attach(e *echo.Echo) {
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
-	e.Pre(middleware.RemoveTrailingSlash())
-}
-
+// Server is the server object
 type Server struct {
 	server *echo.Echo
 }
 
+// NewServer returns a new server instance
 func NewServer() *Server {
 	e := echo.New()
 
@@ -53,13 +49,21 @@ func NewServer() *Server {
 
 	rp := repository.NewRestaurantRepo(conn.GetDB().DB)
 	us := usecase.NewRestaurantUseCase(rp)
-	handler.NewHandler(e, us)
+
+	dr := repository.NewDishRepo(conn.GetDB().DB)
+	dc := usecase.NewDishUseCase(dr)
+
+	ur := repository.NewUserRepo(conn.GetDB().DB)
+	uu := usecase.NewUserUseCase(ur)
+
+	handler.NewHandler(e, us, dc, uu)
 
 	// attaching middleware to echo server
 	attach(e)
 	return &Server{server: e}
 }
 
+// Run runs the server. gracefully shut down the server if any terminal signal received
 func (s *Server) Run() {
 	go func() {
 		s.server.Logger.Error(s.server.Start(":8000"))
@@ -77,4 +81,11 @@ func (s *Server) Run() {
 		return
 	}
 	log.Println("√ successfully shut down!")
+}
+
+// attach add middlewares to echo server
+func attach(e *echo.Echo) {
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+	e.Pre(middleware.RemoveTrailingSlash())
 }

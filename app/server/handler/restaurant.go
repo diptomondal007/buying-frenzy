@@ -39,7 +39,7 @@ func (h *handler) openRestaurants(c echo.Context) error {
 			h.e.Logger.Error("error while parsing input date time", err)
 			return c.JSON(http.StatusBadRequest, common.ErrResp{Error: "bad format of date time"})
 		}
-		now = n.UTC()
+		now = n
 		log.Println("now", now)
 	}
 

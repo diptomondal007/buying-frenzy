@@ -31,6 +31,7 @@ type Stream struct {
 	want  chan struct{}
 }
 
+// Entry is data holder for each entry in data file
 type Entry struct {
 	Data  interface{}
 	Error error
@@ -45,18 +46,22 @@ func NewJSONStreamer() Stream {
 	}
 }
 
+// Watch ...
 func (s Stream) Watch() <-chan Entry {
 	return s.c
 }
 
+// Want ...
 func (s Stream) Want() <-chan struct{} {
 	return s.want
 }
 
+// Value ...
 func (s Stream) Value() chan<- interface{} {
 	return s.value
 }
 
+// Start ...
 func (s Stream) Start(file string) {
 	defer close(s.c)
 

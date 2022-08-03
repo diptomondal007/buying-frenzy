@@ -16,3 +16,43 @@
 // under the License.
 
 package handler
+
+import (
+	"log"
+	"net/http"
+	"strconv"
+
+	"github.com/labstack/echo/v4"
+
+	"github.com/diptomondal007/buying-frenzy/app/common"
+)
+
+func (h *handler) purchase(c echo.Context) error {
+	userID, err := strconv.Atoi(c.Param("user_id"))
+	if err != nil {
+		log.Println("bad data given as a user id", err)
+		return c.JSON(http.StatusBadRequest, common.ErrResp{Error: "not a valid user id!"})
+	}
+
+	var pr *common.PurchaseRequest
+	err = c.Bind(&pr)
+	if err != nil {
+		log.Println("bad data given", err)
+		return c.JSON(http.StatusBadRequest, common.ErrResp{Error: "not a valid request body!"})
+	}
+
+	if pr.RestaurantID == "" || pr.MenuID == "" {
+		log.Println("bad data given", err)
+		return c.JSON(http.StatusBadRequest, common.ErrResp{Error: "not a valid request body!"})
+	}
+
+	u, err := h.uc.PurchaseDish(userID, pr.RestaurantID, pr.MenuID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, common.ErrResp{Error: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, common.Resp{
+		Message: "request successful!",
+		Data:    u,
+	})
+}

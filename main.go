@@ -19,6 +19,7 @@ package main
 
 import "github.com/diptomondal007/buying-frenzy/cmd"
 
+// main this is where it all begins
 func main() {
 	cmd.Execute()
 }

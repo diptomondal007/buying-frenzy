@@ -61,7 +61,7 @@ Query Params:
 }
 ```
 
-#### Open Restaurants
+#### List Restaurants
 > api/v1/restaurant/list?less_than=2&price_low=20&price_high=400
 
 Query Params:

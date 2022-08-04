@@ -42,9 +42,9 @@ func (h *handler) openRestaurants(c echo.Context) error {
 			return c.JSON(response.RespondError(response.ErrBadRequest, fmt.Errorf("bad format of date time")))
 		}
 		now = n
-		log.Println("now", now)
 	}
 
+	log.Println("now", now)
 	rs, err := h.rc.ListRestaurantsByFilter(now)
 	if err != nil {
 		log.Println("response while fetching from db. response: ", err)

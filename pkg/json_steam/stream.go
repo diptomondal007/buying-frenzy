@@ -74,7 +74,7 @@ func (s Stream) Start(file string) {
 
 	de := json.NewDecoder(f)
 	if _, err = de.Token(); err != nil {
-		s.c <- Entry{Error: fmt.Errorf("error decoding json: %w", err)}
+		s.c <- Entry{Error: fmt.Errorf("response decoding json: %w", err)}
 		return
 	}
 

@@ -15,15 +15,22 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package common
+package response
 
-// ErrResp holds the structure for error response
-type ErrResp struct {
-	Error string `json:"error"`
+// Response holds generic response structure
+type Response struct {
+	Success    bool        `json:"success"`
+	Message    string      `json:"message"`
+	StatusCode int         `json:"status_code"`
+	Data       interface{} `json:"data,omitempty"`
 }
 
-// Resp holds the response structure of success response
-type Resp struct {
-	Message string      `json:"message"`
-	Data    interface{} `json:"data"`
+// RespondSuccess returns status code and success response
+func RespondSuccess(statusCode int, message string, data interface{}) (int, Response) {
+	return statusCode, Response{
+		Success:    true,
+		Message:    message,
+		StatusCode: statusCode,
+		Data:       data,
+	}
 }

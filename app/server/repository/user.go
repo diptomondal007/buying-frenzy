@@ -20,8 +20,10 @@ package repository
 import (
 	"fmt"
 	"github.com/diptomondal007/buying-frenzy/app/common/model"
+	"github.com/diptomondal007/buying-frenzy/app/common/response"
 	"github.com/doug-martin/goqu/v9"
 	"github.com/jmoiron/sqlx"
+	"net/http"
 )
 
 // userRepository ...
@@ -77,7 +79,9 @@ func (u userRepository) PurchaseDish(userID int, restaurantID, menuID string) (m
 		return model.UserInfo{}, err
 	}
 	if rDish.DishPrice > user.CashBalance {
-		return model.UserInfo{}, fmt.Errorf("you don't have enough cash to buy this dish! you have $%.2f", user.CashBalance)
+		return model.UserInfo{}, response.WrapError(
+			fmt.Errorf("you don't have enough cash to buy this dish! you have $%.2f", user.CashBalance),
+			http.StatusNotAcceptable, "")
 	}
 
 	q, _, err = goqu.Update(model.RESTAURANTTable).Set(map[string]interface{}{

@@ -18,29 +18,27 @@
 package handler
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 
-	"github.com/diptomondal007/buying-frenzy/app/common"
+	"github.com/diptomondal007/buying-frenzy/app/common/response"
 )
 
 func (h *handler) searchDish(c echo.Context) error {
 	q := c.QueryParam("q")
 
 	if q == "" {
-		return c.JSON(http.StatusBadRequest, common.ErrResp{Error: "search term missing!"})
+		return c.JSON(response.RespondError(response.ErrBadRequest, fmt.Errorf("query param 'q' required")))
 	}
 
-	rs, err := h.dc.SearchDish(q)
+	ds, err := h.dc.SearchDish(q)
 	if err != nil {
-		log.Println("error while fetching from db. error: ", err)
-		return c.JSON(http.StatusInternalServerError, common.ErrResp{Error: "something went wrong"})
+		log.Println("error fetching from db. err: ", err)
+		return c.JSON(response.RespondError(err))
 	}
 
-	return c.JSON(http.StatusOK, common.Resp{
-		Message: "request successful!",
-		Data:    rs,
-	})
+	return c.JSON(response.RespondSuccess(http.StatusOK, "request successful!", ds))
 }

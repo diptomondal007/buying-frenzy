@@ -77,12 +77,12 @@ func (e *ETL) extractUser() error {
 		u, ok := data.Data.(*common.User)
 		if !ok {
 			log.Println("not ok")
-			return fmt.Errorf("error asserting user data")
+			return fmt.Errorf("response asserting user data")
 		}
 
 		err := e.Transformer.transformUserData(u)
 		if err != nil {
-			log.Println("error while transforming data. user id >> ", u.ID, " err: ", err)
+			log.Println("response while transforming data. user id >> ", u.ID, " err: ", err)
 			return nil
 		}
 	}
@@ -113,7 +113,7 @@ func (e *ETL) extractRestaurant() error {
 
 		err := e.Transformer.transformRestaurantData(r)
 		if err != nil {
-			log.Println("error while transforming restaurant data >>>> ", err)
+			log.Println("response while transforming restaurant data >>>> ", err)
 			return nil
 		}
 	}

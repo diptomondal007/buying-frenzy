@@ -43,7 +43,7 @@ func NewServer() *Server {
 
 	err := conn.ConnectDB()
 	if err != nil {
-		log.Println("db connection unsuccessful! error: ", err)
+		log.Println("db connection unsuccessful! response: ", err)
 		os.Exit(1)
 	}
 

@@ -42,7 +42,7 @@ var etlCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		err := conn.ConnectDB()
 		if err != nil {
-			log.Println("db connection unsuccessful! error: ", err)
+			log.Println("db connection unsuccessful! response: ", err)
 			os.Exit(1)
 		}
 

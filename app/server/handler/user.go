@@ -18,6 +18,7 @@
 package handler
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -25,34 +26,32 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"github.com/diptomondal007/buying-frenzy/app/common"
+	"github.com/diptomondal007/buying-frenzy/app/common/response"
 )
 
 func (h *handler) purchase(c echo.Context) error {
 	userID, err := strconv.Atoi(c.Param("user_id"))
 	if err != nil {
-		log.Println("bad data given as a user id", err)
-		return c.JSON(http.StatusBadRequest, common.ErrResp{Error: "not a valid user id!"})
+		log.Println("bad data given as user id", err)
+		return c.JSON(response.RespondError(response.ErrBadRequest, fmt.Errorf("not a valid user id")))
 	}
 
 	var pr *common.PurchaseRequest
 	err = c.Bind(&pr)
 	if err != nil {
 		log.Println("bad data given", err)
-		return c.JSON(http.StatusBadRequest, common.ErrResp{Error: "not a valid request body!"})
+		return c.JSON(response.RespondError(fmt.Errorf("not a valid request body")))
 	}
 
 	if pr.RestaurantID == "" || pr.MenuID == "" {
 		log.Println("bad data given", err)
-		return c.JSON(http.StatusBadRequest, common.ErrResp{Error: "not a valid request body!"})
+		return c.JSON(response.RespondError(fmt.Errorf("not a valid request body")))
 	}
 
 	u, err := h.uc.PurchaseDish(userID, pr.RestaurantID, pr.MenuID)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, common.ErrResp{Error: err.Error()})
+		return c.JSON(response.RespondError(err))
 	}
 
-	return c.JSON(http.StatusOK, common.Resp{
-		Message: "request successful!",
-		Data:    u,
-	})
+	return c.JSON(response.RespondSuccess(http.StatusAccepted, "purchased successfully!", u))
 }

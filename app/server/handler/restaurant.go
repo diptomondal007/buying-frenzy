@@ -18,6 +18,7 @@
 package handler
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -27,6 +28,7 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"github.com/diptomondal007/buying-frenzy/app/common"
+	"github.com/diptomondal007/buying-frenzy/app/common/response"
 )
 
 //
@@ -36,8 +38,8 @@ func (h *handler) openRestaurants(c echo.Context) error {
 	if c.QueryParam("date_time") != "" {
 		n, err := dateparse.ParseAny(c.QueryParam("date_time"))
 		if err != nil {
-			h.e.Logger.Error("error while parsing input date time", err)
-			return c.JSON(http.StatusBadRequest, common.ErrResp{Error: "bad format of date time"})
+			h.e.Logger.Error("response while parsing input date time", err)
+			return c.JSON(response.RespondError(response.ErrBadRequest, fmt.Errorf("bad format of date time")))
 		}
 		now = n
 		log.Println("now", now)
@@ -45,14 +47,11 @@ func (h *handler) openRestaurants(c echo.Context) error {
 
 	rs, err := h.rc.ListRestaurantsByFilter(now)
 	if err != nil {
-		log.Println("error while fetching from db. error: ", err)
-		return c.JSON(http.StatusInternalServerError, common.ErrResp{Error: "something went wrong"})
+		log.Println("response while fetching from db. response: ", err)
+		return c.JSON(response.RespondError(err))
 	}
 
-	return c.JSON(http.StatusOK, common.Resp{
-		Message: "request successful!",
-		Data:    rs,
-	})
+	return c.JSON(response.RespondSuccess(http.StatusOK, "request successful!", rs))
 }
 
 func (h *handler) list(c echo.Context) error {
@@ -60,27 +59,28 @@ func (h *handler) list(c echo.Context) error {
 	highP := c.QueryParam("price_high")
 
 	if lowP == "" || highP == "" {
-		return c.JSON(http.StatusBadRequest, common.ErrResp{Error: "low or high value of price range is missing!"})
+		return c.JSON(response.RespondError(response.ErrBadRequest, fmt.Errorf("low or high value of price range is missing")))
 	}
 
 	lessThan := c.QueryParam("less_than")
 	moreThan := c.QueryParam("more_than")
 	if lessThan == "" && moreThan == "" {
-		return c.JSON(http.StatusBadRequest, common.ErrResp{Error: "both more_than and less_than param can't be empty!"})
+		return c.JSON(response.RespondError(response.ErrBadRequest,
+			fmt.Errorf("both more_than and less_than param can't be empty")))
 	}
 
 	if lessThan != "" && moreThan != "" {
-		return c.JSON(http.StatusBadRequest, common.ErrResp{Error: "both more_than and less_than param exist! please use one of them at a time"})
+		return c.JSON(response.RespondError(response.ErrBadRequest, fmt.Errorf("both more_than and less_than param exist! please use one of them at a time")))
 	}
 
 	lowPF, err := strconv.ParseFloat(lowP, 64)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, common.ErrResp{Error: "invalid value for low range"})
+		return c.JSON(response.RespondError(response.ErrBadRequest, fmt.Errorf("invalid value for low range")))
 	}
 
 	highPF, err := strconv.ParseFloat(highP, 64)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, common.ErrResp{Error: "invalid value for high range"})
+		return c.JSON(response.RespondError(response.ErrBadRequest, fmt.Errorf("invalid value for high range")))
 	}
 
 	var lessThanV *int
@@ -89,7 +89,7 @@ func (h *handler) list(c echo.Context) error {
 	if lessThan != "" {
 		v, err := strconv.Atoi(lessThan)
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, common.ErrResp{Error: "invalid value for 'less_than' param"})
+			return c.JSON(response.RespondError(fmt.Errorf("invalid value for 'less_than' param")))
 		}
 		lessThanV = &v
 	}
@@ -97,7 +97,7 @@ func (h *handler) list(c echo.Context) error {
 	if moreThan != "" {
 		v, err := strconv.Atoi(moreThan)
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, common.ErrResp{Error: "invalid value for 'more than' param"})
+			return c.JSON(response.RespondError(response.ErrBadRequest, fmt.Errorf("invalid value for 'more than' param")))
 		}
 		moreThanV = &v
 	}
@@ -113,31 +113,25 @@ func (h *handler) list(c echo.Context) error {
 		},
 	})
 	if err != nil {
-		log.Println("error while fetching from db. error: ", err)
-		return c.JSON(http.StatusInternalServerError, common.ErrResp{Error: "something went wrong"})
+		log.Println("response while fetching from db. response: ", err)
+		return c.JSON(response.RespondError(err))
 	}
 
-	return c.JSON(http.StatusOK, common.Resp{
-		Message: "request successful!",
-		Data:    rs,
-	})
+	return c.JSON(response.RespondSuccess(http.StatusOK, "request successful!", rs))
 }
 
 func (h *handler) search(c echo.Context) error {
 	q := c.QueryParam("q")
 
 	if q == "" {
-		return c.JSON(http.StatusBadRequest, common.ErrResp{Error: "search term missing!"})
+		return c.JSON(response.RespondError(response.ErrBadRequest, fmt.Errorf("search term 'q' missing")))
 	}
 
 	rs, err := h.rc.SearchRestaurant(q)
 	if err != nil {
-		log.Println("error while fetching from db. error: ", err)
-		return c.JSON(http.StatusInternalServerError, common.ErrResp{Error: "something went wrong"})
+		log.Println("response while fetching from db. response: ", err)
+		return c.JSON(response.RespondError(err))
 	}
 
-	return c.JSON(http.StatusOK, common.Resp{
-		Message: "request successful!",
-		Data:    rs,
-	})
+	return c.JSON(response.RespondSuccess(http.StatusOK, "request successful!", rs))
 }

@@ -43,6 +43,7 @@ func (u userRepository) PurchaseDish(userID int, restaurantID, menuID string) (m
 	var updatedUser model.UserInfo
 
 	tx := u.db.MustBegin()
+	defer tx.Rollback()
 
 	var user model.UserInfo
 	q, _, err := goqu.From(goqu.T(model.USERInfoTable).As("u")).

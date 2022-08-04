@@ -37,6 +37,7 @@ type loader struct {
 
 func (l loader) loadUserData(user model.UserInfo, histories []model.PurchaseHistory) error {
 	tx := l.db.MustBegin()
+	defer tx.Rollback()
 
 	sql, _, err := goqu.Insert(model.USERInfoTable).Rows(user).ToSQL()
 	if err != nil {
@@ -58,6 +59,8 @@ func (l loader) loadUserData(user model.UserInfo, histories []model.PurchaseHist
 
 func (l loader) loadRestaurantData(r model.Restaurant, s []model.OpenHour, m []model.Dish) error {
 	tx := l.db.MustBegin()
+	defer tx.Rollback()
+
 	sql, _, err := goqu.Insert(model.RESTAURANTTable).Rows(&r).ToSQL()
 	if err != nil {
 		return err

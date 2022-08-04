@@ -21,6 +21,7 @@ import (
 	"github.com/araddon/dateparse"
 	uuid "github.com/satori/go.uuid"
 	"log"
+	"time"
 
 	"github.com/diptomondal007/buying-frenzy/app/common"
 	"github.com/diptomondal007/buying-frenzy/app/common/model"
@@ -75,7 +76,7 @@ func (t transformer) toPurchaseHistoryModel(userID int, history []common.Purchas
 	hs := make([]model.PurchaseHistory, 0)
 
 	for i := range history {
-		ti, _ := dateparse.ParseLocal(history[i].TransactionDate)
+		ti, _ := dateparse.ParseIn(history[i].TransactionDate, time.UTC)
 		restaurantID := t.restM[history[i].RestaurantName]
 		dishID := t.dishM[history[i].DishName]
 

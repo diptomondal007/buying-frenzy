@@ -66,7 +66,7 @@ func NewServer() *Server {
 // Run runs the server. gracefully shut down the server if any terminal signal received
 func (s *Server) Run() {
 	go func() {
-		s.server.Logger.Error(s.server.Start(":8000"))
+		s.server.Logger.Error(s.server.Start(":8080"))
 	}()
 
 	sig := make(chan os.Signal, 1)

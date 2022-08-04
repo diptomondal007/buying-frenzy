@@ -36,7 +36,7 @@ func (h *handler) openRestaurants(c echo.Context) error {
 	now := time.Now()
 
 	if c.QueryParam("date_time") != "" {
-		n, err := dateparse.ParseAny(c.QueryParam("date_time"))
+		n, err := dateparse.ParseIn(c.QueryParam("date_time"), time.UTC)
 		if err != nil {
 			h.e.Logger.Error("response while parsing input date time", err)
 			return c.JSON(response.RespondError(response.ErrBadRequest, fmt.Errorf("bad format of date time")))

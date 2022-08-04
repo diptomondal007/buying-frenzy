@@ -11,5 +11,5 @@ FROM scratch AS final
 
 COPY --from=builder buying-frenzy buying-frenzy
 
-EXPOSE 8000
+EXPOSE 8080
 ENTRYPOINT ["/buying-frenzy"]

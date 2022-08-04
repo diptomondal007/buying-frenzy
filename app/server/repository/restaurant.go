@@ -48,17 +48,23 @@ func (r restaurant) GetOpenRestaurants(hour, minute int, weekDay string) ([]*mod
 		Join(goqu.T(model.OPENHourTable).As("oh"), goqu.On(goqu.Ex{"r.id": goqu.I("oh.restaurant_id")})).
 		Where(goqu.Ex{
 			"oh.week_name": goqu.Op{"eq": weekDay},
-		}).Where(
-		goqu.Or(
+		}).GroupBy("r.id", "oh.closing_time", "oh.start_time", "oh.week_name").
+		Having(goqu.Or(
 			goqu.Ex{
 				"oh.start_time":   goqu.Op{"lte": t},
 				"oh.closing_time": goqu.Op{"gte": t},
 			},
-			goqu.Ex{
-				"oh.start_time":   goqu.Op{"gte": t},
-				"oh.closing_time": goqu.Op{"lte": t},
-			},
-		)).GroupBy("r.id").ToSQL()
+			goqu.Or(
+				goqu.And(
+					goqu.Ex{
+						"oh.closing_time": goqu.Op{"lt": goqu.I("oh.start_time")},
+					},
+					goqu.Ex{
+						"oh.start_time":   goqu.Op{"lte": t},
+						"oh.closing_time": goqu.Op{"lte": t},
+					}),
+			),
+		)).ToSQL()
 
 	if err != nil {
 		return nil, err

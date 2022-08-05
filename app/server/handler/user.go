@@ -40,12 +40,12 @@ func (h *handler) purchase(c echo.Context) error {
 	err = c.Bind(&pr)
 	if err != nil {
 		log.Println("bad data given", err)
-		return c.JSON(response.RespondError(fmt.Errorf("not a valid request body")))
+		return c.JSON(response.RespondError(response.ErrBadRequest, fmt.Errorf("not a valid request body")))
 	}
 
 	if pr.RestaurantID == "" || pr.MenuID == "" {
-		log.Println("bad data given", err)
-		return c.JSON(response.RespondError(fmt.Errorf("not a valid request body")))
+		log.Println("bad data given. req:= ", pr)
+		return c.JSON(response.RespondError(response.ErrBadRequest, fmt.Errorf("not a valid request body")))
 	}
 
 	u, err := h.uc.PurchaseDish(userID, pr.RestaurantID, pr.MenuID)

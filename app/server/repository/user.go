@@ -18,12 +18,16 @@
 package repository
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
-	"github.com/diptomondal007/buying-frenzy/app/common/model"
-	"github.com/diptomondal007/buying-frenzy/app/common/response"
+	"net/http"
+
 	"github.com/doug-martin/goqu/v9"
 	"github.com/jmoiron/sqlx"
-	"net/http"
+
+	"github.com/diptomondal007/buying-frenzy/app/common/model"
+	"github.com/diptomondal007/buying-frenzy/app/common/response"
 )
 
 // userRepository ...
@@ -58,6 +62,11 @@ func (u userRepository) PurchaseDish(userID int, restaurantID, menuID string) (m
 	}
 
 	if err := tx.Get(&user, q); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return model.UserInfo{}, response.WrapError(
+				fmt.Errorf("user not found"),
+				http.StatusNotFound, "")
+		}
 		return model.UserInfo{}, err
 	}
 
@@ -76,6 +85,11 @@ func (u userRepository) PurchaseDish(userID int, restaurantID, menuID string) (m
 	}
 
 	if err := tx.Get(&rDish, q); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return model.UserInfo{}, response.WrapError(
+				fmt.Errorf("restaurant or dish does not exist"),
+				http.StatusNotFound, "")
+		}
 		return model.UserInfo{}, err
 	}
 	if rDish.DishPrice > user.CashBalance {

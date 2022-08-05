@@ -100,5 +100,5 @@ func (s Stream) Start(file string) {
 		return
 	}
 
-	log.Println(">>>>>>>>>>>>> reading data successful")
+	log.Println("√ ..... Reading data successful ...... √")
 }

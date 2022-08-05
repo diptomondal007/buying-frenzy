@@ -30,7 +30,7 @@ type handler struct {
 	uc usecase.UserUseCase
 }
 
-func NewHandler(e *echo.Echo, rc usecase.RestaurantUseCase, dc usecase.DishUseCase, uc usecase.UserUseCase) {
+func NewHandler(e *echo.Echo, rc usecase.RestaurantUseCase, dc usecase.DishUseCase, uc usecase.UserUseCase) handler {
 	h := handler{e: e, rc: rc, dc: dc, uc: uc}
 
 	// restaurant group
@@ -44,4 +44,6 @@ func NewHandler(e *echo.Echo, rc usecase.RestaurantUseCase, dc usecase.DishUseCa
 	//
 	dg := e.Group("/api/v1/dish")
 	dg.GET("/search", h.searchDish)
+
+	return h
 }

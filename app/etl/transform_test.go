@@ -34,7 +34,6 @@ func Test_toOpenHours(t *testing.T) {
 		args args
 		want []model.OpenHour
 	}{
-		// TODO: Add test cases.
 		{
 			name: "t-01",
 			args: args{
@@ -45,13 +44,13 @@ func Test_toOpenHours(t *testing.T) {
 				{
 					WeekName:     "Monday",
 					StartTime:    model.NewPGTimeFromHourMinute(7, 45),
-					ClosingTime:  model.NewPGTimeFromHourMinute(7, 45),
+					ClosingTime:  model.NewPGTimeFromHourMinute(11, 15),
 					RestaurantID: "d12b245e-0d11-4e74-9586-25e5460283b6",
 				},
 				{
 					WeekName:     "Tuesday",
 					StartTime:    model.NewPGTimeFromHourMinute(7, 45),
-					ClosingTime:  model.NewPGTimeFromHourMinute(7, 45),
+					ClosingTime:  model.NewPGTimeFromHourMinute(11, 15),
 					RestaurantID: "d12b245e-0d11-4e74-9586-25e5460283b6",
 				},
 			},

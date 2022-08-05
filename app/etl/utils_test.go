@@ -20,6 +20,8 @@ package etl
 import (
 	"reflect"
 	"testing"
+
+	"github.com/diptomondal007/buying-frenzy/app/common"
 )
 
 func Test_parseOpeningHours(t *testing.T) {
@@ -37,8 +39,8 @@ func Test_parseOpeningHours(t *testing.T) {
 			args: args{openHour: "Mon - Weds 10:15 am - 7:45 pm / Thurs 5:30 pm - 1 am /"},
 			want: []*schedule{
 				{
-					fromWeekday: toIntP(1),
-					toWeekDay:   toIntP(3),
+					fromWeekday: (*weekDay)(common.ToIntP(1)),
+					toWeekDay:   (*weekDay)(common.ToIntP(3)),
 					from: &clock{
 						hour:   10,
 						minute: 15,
@@ -49,7 +51,7 @@ func Test_parseOpeningHours(t *testing.T) {
 					},
 				},
 				{
-					fromWeekday: toIntP(4),
+					fromWeekday: (*weekDay)(common.ToIntP(4)),
 					toWeekDay:   nil,
 					from: &clock{
 						hour:   17,
@@ -119,8 +121,8 @@ func Test_parseSchedule(t *testing.T) {
 			name: "t-01",
 			args: args{openHour: "Mon - Tues 7:45 am - 11:15 am"},
 			want: &schedule{
-				fromWeekday: toIntP(1),
-				toWeekDay:   toIntP(2),
+				fromWeekday: (*weekDay)(common.ToIntP(1)),
+				toWeekDay:   (*weekDay)(common.ToIntP(2)),
 				from: &clock{
 					hour:   7,
 					minute: 45,
@@ -135,7 +137,7 @@ func Test_parseSchedule(t *testing.T) {
 			name: "t-02",
 			args: args{openHour: "Tues 1:30 pm - 2:30 pm"},
 			want: &schedule{
-				fromWeekday: toIntP(2),
+				fromWeekday: (*weekDay)(common.ToIntP(2)),
 				toWeekDay:   nil,
 				from: &clock{
 					hour:   13,
@@ -151,8 +153,8 @@ func Test_parseSchedule(t *testing.T) {
 			name: "t-03",
 			args: args{openHour: "Thurs, Sun 8 am - 1:15 am"},
 			want: &schedule{
-				fromWeekday: toIntP(4),
-				toWeekDay:   toIntP(0),
+				fromWeekday: (*weekDay)(common.ToIntP(4)),
+				toWeekDay:   (*weekDay)(common.ToIntP(0)),
 				from: &clock{
 					hour:   8,
 					minute: 0,
@@ -167,8 +169,8 @@ func Test_parseSchedule(t *testing.T) {
 			name: "t-04",
 			args: args{openHour: "Mon - Weds 10:15 am - 7:45 pm"},
 			want: &schedule{
-				fromWeekday: toIntP(1),
-				toWeekDay:   toIntP(3),
+				fromWeekday: (*weekDay)(common.ToIntP(1)),
+				toWeekDay:   (*weekDay)(common.ToIntP(3)),
 				from: &clock{
 					hour:   10,
 					minute: 15,
@@ -187,10 +189,6 @@ func Test_parseSchedule(t *testing.T) {
 			}
 		})
 	}
-}
-
-func toIntP(a int) *weekDay {
-	return (*weekDay)(&a)
 }
 
 func Test_strToHourMin(t *testing.T) {

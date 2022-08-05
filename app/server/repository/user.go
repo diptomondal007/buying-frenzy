@@ -22,6 +22,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/jmoiron/sqlx"
@@ -113,6 +114,22 @@ func (u userRepository) PurchaseDish(userID int, restaurantID, menuID string) (m
 		return model.UserInfo{}, err
 	}
 	tx.MustExec(q)
+
+	q, _, err = goqu.Insert(goqu.T(model.PURCHASEHistoryTable)).Rows(model.PurchaseHistory{
+		TransactionAmount: rDish.DishPrice,
+		TransactionDate:   time.Now().UTC(),
+		RestaurantID:      rDish.RestaurantID,
+		DishID:            rDish.DishID,
+		UserID:            userID,
+	}).ToSQL()
+	if err != nil {
+		return model.UserInfo{}, err
+	}
+
+	_, err = tx.Exec(q)
+	if err != nil {
+		return model.UserInfo{}, err
+	}
 
 	q, _, err = goqu.From(goqu.T(model.USERInfoTable).As("u")).
 		Select("u.*").Where(

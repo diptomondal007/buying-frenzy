@@ -104,7 +104,8 @@ func (s *schedule) parseOpeningHour(openHour string) {
 					}
 					break
 				}
-				s.setFromTime(openHour[in : i-1])
+				//log.Println(">>>>>>>>", openHour[in-1:i-1])
+				s.setFromTime(openHour[in-1 : i-1])
 				s.setToTime(openHour[i+1:])
 				return
 			} else {
@@ -169,11 +170,11 @@ func parseTime(t string) (int, int) {
 }
 
 func strToHourMin(s string) (int, int) {
-	sp := strings.Split(s, ":")
-
-	if len(sp) < 1 {
+	if len(s) == 0 {
 		return 0, 0
 	}
+
+	sp := strings.Split(s, ":")
 
 	h, err := strconv.Atoi(sp[0])
 	if err != nil {

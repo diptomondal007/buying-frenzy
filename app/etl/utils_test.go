@@ -29,13 +29,38 @@ func Test_parseOpeningHours(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want []string
+		want []*schedule
 	}{
-		// TODO: Add test cases.
+
 		{
 			name: "t-01",
-			args: args{openHour: "Mon - Weds 10:15 am - 7:45 pm / Thurs 5:30 pm - 1 am / Fri 3:45 pm - 7:30 pm / Sat 7:45 am - 8:15 am / Sun 7:30 am - 8 am"},
-			want: []string{"Mon - Weds 10:15 am - 7:45 pm", "Thurs 5:30 pm - 1 am", "Fri 3:45 pm - 7:30 pm", "Sat 7:45 am - 8:15 am", "Sun 7:30 am - 8 am"},
+			args: args{openHour: "Mon - Weds 10:15 am - 7:45 pm / Thurs 5:30 pm - 1 am /"},
+			want: []*schedule{
+				{
+					fromWeekday: toIntP(1),
+					toWeekDay:   toIntP(3),
+					from: &clock{
+						hour:   10,
+						minute: 15,
+					},
+					to: &clock{
+						hour:   19,
+						minute: 45,
+					},
+				},
+				{
+					fromWeekday: toIntP(4),
+					toWeekDay:   nil,
+					from: &clock{
+						hour:   17,
+						minute: 30,
+					},
+					to: &clock{
+						hour:   1,
+						minute: 0,
+					},
+				},
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -138,6 +163,22 @@ func Test_parseSchedule(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "t-04",
+			args: args{openHour: "Mon - Weds 10:15 am - 7:45 pm"},
+			want: &schedule{
+				fromWeekday: toIntP(1),
+				toWeekDay:   toIntP(3),
+				from: &clock{
+					hour:   10,
+					minute: 15,
+				},
+				to: &clock{
+					hour:   19,
+					minute: 45,
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -150,4 +191,120 @@ func Test_parseSchedule(t *testing.T) {
 
 func toIntP(a int) *weekDay {
 	return (*weekDay)(&a)
+}
+
+func Test_strToHourMin(t *testing.T) {
+	type args struct {
+		s string
+	}
+	tests := []struct {
+		name  string
+		args  args
+		want  int
+		want1 int
+	}{
+		{
+			name:  "t-01",
+			args:  args{s: "1:00"},
+			want:  1,
+			want1: 0,
+		},
+		{
+			name:  "t-02",
+			args:  args{s: "1"},
+			want:  1,
+			want1: 0,
+		},
+		{
+			name:  "t-03",
+			args:  args{s: ""},
+			want:  0,
+			want1: 0,
+		},
+		{
+			name:  "t-04",
+			args:  args{s: "asd:10"},
+			want:  0,
+			want1: 0,
+		},
+		{
+			name:  "t-05",
+			args:  args{s: "10:p"},
+			want:  0,
+			want1: 0,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := strToHourMin(tt.args.s)
+			if got != tt.want {
+				t.Errorf("strToHourMin() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("strToHourMin() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
+
+func Test_weekDay_String(t *testing.T) {
+	tests := []struct {
+		name string
+		w    weekDay
+		want string
+	}{
+		{
+			name: "t-01",
+			w:    weekDay(0),
+			want: "Sunday",
+		},
+		{
+			name: "t-02",
+			w:    weekDay(1),
+			want: "Monday",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.w.String(); got != tt.want {
+				t.Errorf("String() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_parseTime(t *testing.T) {
+	type args struct {
+		t string
+	}
+	tests := []struct {
+		name  string
+		args  args
+		want  int
+		want1 int
+	}{
+		{
+			name:  "t-01",
+			args:  args{t: "1:00"},
+			want:  0,
+			want1: 0,
+		},
+		{
+			name:  "t-02",
+			args:  args{t: "1"},
+			want:  0,
+			want1: 0,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := parseTime(tt.args.t)
+			if got != tt.want {
+				t.Errorf("parseTime() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("parseTime() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
 }

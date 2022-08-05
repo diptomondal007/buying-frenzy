@@ -18,10 +18,10 @@
 package etl
 
 import (
+	"time"
+
 	"github.com/araddon/dateparse"
 	uuid "github.com/satori/go.uuid"
-	"log"
-	"time"
 
 	"github.com/diptomondal007/buying-frenzy/app/common"
 	"github.com/diptomondal007/buying-frenzy/app/common/model"
@@ -137,9 +137,6 @@ func toOpenHours(rid, h string) []model.OpenHour {
 			to = from
 			from = temp
 		}
-
-		log.Println("from >>>>>>", from)
-		log.Println(">>>> to", to)
 
 		for f := from; f <= to; f++ {
 			openHours = append(openHours, model.OpenHour{

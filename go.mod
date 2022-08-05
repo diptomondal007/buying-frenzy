@@ -12,6 +12,7 @@ require (
 
 require (
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/doug-martin/goqu v5.0.0+incompatible // indirect
 	github.com/doug-martin/goqu/v9 v9.18.0 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect

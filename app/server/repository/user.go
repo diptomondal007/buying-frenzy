@@ -21,6 +21,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -128,6 +129,7 @@ func (u userRepository) PurchaseDish(userID int, restaurantID, menuID string) (m
 
 	_, err = tx.Exec(q)
 	if err != nil {
+		log.Println(err)
 		return model.UserInfo{}, err
 	}
 

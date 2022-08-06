@@ -19,6 +19,17 @@ Run this command to run a postgresql instance in docker container and the etl co
 make etl-local
 ```
 
+#### Test
+```shell
+make test
+```
+
+#### Test with coverage report
+This is open a browser tab with graphical coverage report
+```shell
+make test-coverage
+```
+
 #### Server
 This app will be running on port 8080.
 ```shell
@@ -27,6 +38,8 @@ make development-serve
 
 ### Api
 #### Open Restaurants
+This api returns list of open restaurants on a particular time. It takes
+current time of the system in utc if no `date_time` query param is provided.
 
 ---
 Method : `GET`
@@ -65,6 +78,8 @@ Query Params:
 ```
 
 #### List Restaurants
+Provides a list of restaurant which have items which maintains the condition low_price >= price <= high_price
+and the count of the items in the range for a restaurant is > more_than or count < less_than 
 
 ---
 Method : `GET`
@@ -107,6 +122,7 @@ Query Params:
 ```
 
 #### Search Restaurants
+Provides a list of restaurant which matches with the search term.
 
 ---
 Method : `GET`
@@ -144,6 +160,7 @@ Query Params:
 ```
 
 #### Search Dishes
+Provides a list of dishes which matches with the search term.
 
 ---
 
@@ -184,6 +201,9 @@ Query Params:
 ```
 
 #### Purchase Dish
+
+This api is used to purchase a dish from a restaurant. This is give 406 status code with current balance of the user if
+the balance is lower than the dish price. The requested dish needs to belong to the requested restaurant.
 
 ---
 
